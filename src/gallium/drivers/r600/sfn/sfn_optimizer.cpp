@@ -35,12 +35,24 @@ log_shader_dump(const Shader& shader, const char *header)
 
 template <typename Visitor>
 static bool
-run_visitor_to_fixpoint(Shader& shader, Visitor& visitor, const char *dump_header = nullptr)
+run_visitor_to_fixpoint(Shader& shader,
+                        Visitor& visitor,
+                        const char *dump_header = nullptr,
+                        unsigned max_pass_count = 0)
 {
+   unsigned pass_count = 0;
+
    do {
       visitor.progress = false;
       for (auto b : shader.func())
          b->accept(visitor);
+
+      ++pass_count;
+      if (max_pass_count && visitor.progress && pass_count >= max_pass_count) {
+         sfn_log << SfnLog::err << "Optimizer did not converge after "
+                 << max_pass_count << " passes\n";
+         visitor.progress = false;
+      }
    } while (visitor.progress);
 
    if (dump_header)
@@ -105,7 +117,7 @@ bool
 dead_code_elimination(Shader& shader)
 {
    DCEVisitor dce;
-   return run_visitor_to_fixpoint(shader, dce, "Shader after DCE\n");
+   return run_visitor_to_fixpoint(shader, dce, "Shader after DCE\n", 64);
 }
 
 DCEVisitor::DCEVisitor():
