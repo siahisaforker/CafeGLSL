@@ -98,6 +98,8 @@ bool
 dead_code_elimination(Shader& shader)
 {
    DCEVisitor dce;
+   constexpr unsigned max_pass_count = 64;
+   unsigned pass_count = 0;
 
    do {
 
@@ -109,7 +111,13 @@ dead_code_elimination(Shader& shader)
 
       sfn_log << SfnLog::opt << "finished dce run\n\n";
 
-   } while (dce.progress);
+      ++pass_count;
+   } while (dce.progress && pass_count < max_pass_count);
+
+   if (dce.progress) {
+      sfn_log << SfnLog::err << "DCE did not converge after " << max_pass_count << " passes\n";
+      dce.progress = false;
+   }
 
    sfn_log << SfnLog::opt << "Shader after DCE\n";
    if (sfn_log.has_debug_flag(SfnLog::opt)) {
