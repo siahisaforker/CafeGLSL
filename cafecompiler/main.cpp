@@ -33,7 +33,7 @@ std::string ReadFile(const std::string &filePath)
     return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
 
-int wutStdErrCallback(struct _reent *r, void *, const char *data, int len)
+int wutStdErrCallback(struct _reent *r, void *, const char *data, size_t len)
 {
     std::cout.write(data, len);
     return len;
@@ -64,7 +64,7 @@ const uint64_t HookStdErrToStdOut() {
 const void RestoreStdErrHook(uint64_t stderrBackup) {
     fflush(stderr);
 #if defined(__WUT__)
-    stderr->_write = (int (*)(struct _reent *, void *, const char *, int))stderrBackup;
+    stderr->_write = (int (*)(struct _reent *, void *, const char *, size_t))stderrBackup;
 #else
     // Restore the original stderr file descriptor
     if (dup2((int)stderrBackup, fileno(stderr)) == -1) {

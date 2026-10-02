@@ -260,7 +260,7 @@ bool CafeGLSLCompiler::GetShaderBytecode(uint32_t *&programPtr, uint32_t &progra
 }
 
 #ifdef __WUT__
-int _stderr_write_callback(struct _reent *r, void *, const char *data, int len)
+int _stderr_write_callback(struct _reent *r, void *, const char *data, size_t len)
 {
     OSConsoleWrite(data, len);
     return len;
